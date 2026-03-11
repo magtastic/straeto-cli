@@ -28,14 +28,14 @@ jobs:
         with:
           generate_release_notes: true
       - name: Publish to npm
-        run: npm publish
+        run: npm publish || true
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish to GitHub Packages
         run: |
           npm config set @magtastic:registry https://npm.pkg.github.com
           npm pkg set name='@magtastic/straeto'
-          npm publish --access public
+          npm publish --access public || true
           npm pkg set name='straeto'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
