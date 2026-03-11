@@ -29,6 +29,12 @@ bunx straeto stops -r <route>       # filter by route number
 bunx straeto stops --all            # show all stops
 ```
 
+### Search for a place
+```bash
+bunx straeto search <place>          # search by name
+bunx straeto search                  # interactive mode with autocomplete
+```
+
 ### Look up a specific stop
 ```bash
 bunx straeto stop <name or id>     # e.g. "Hlemmur" or "10000802"

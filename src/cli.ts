@@ -7,6 +7,7 @@ import { nextCommand } from "./commands/next";
 import { planCommand } from "./commands/plan";
 import { routeCommand } from "./commands/route";
 import { AlertsOpts, NextOpts, PlanOpts, RouteOpts, StopsOpts } from "./commands/schemas";
+import { searchCommand } from "./commands/search";
 import { stopCommand } from "./commands/stop";
 import { stopsCommand } from "./commands/stops";
 import { writeErr } from "./terminal";
@@ -71,6 +72,19 @@ program
 	.action(async (rawOpts) => {
 		try {
 			await alertsCommand(AlertsOpts.parse(rawOpts));
+		} catch (error) {
+			handleError(error);
+		}
+	});
+
+program
+	.command("search")
+	.description("Search for a place by name")
+	.argument("[query...]", "Place name to search for")
+	.option("-i, --interactive", "Interactive mode with autocomplete")
+	.action(async (parts: string[], rawOpts: { interactive?: boolean }) => {
+		try {
+			await searchCommand(parts, !!rawOpts.interactive || parts.length === 0);
 		} catch (error) {
 			handleError(error);
 		}

@@ -63,6 +63,15 @@ straeto stop Hlemmur
 straeto stop 10000802
 ```
 
+### `straeto search [query]`
+
+Search for a place by name. Launches interactive mode with autocomplete if no query is provided.
+
+```bash
+straeto search Höfðatorg            # search by name
+straeto search                      # interactive with autocomplete
+```
+
 ### `straeto alerts`
 
 Show active service alerts.

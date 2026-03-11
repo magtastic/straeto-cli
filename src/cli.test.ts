@@ -26,6 +26,7 @@ describe("cli --help", () => {
 		expect(stdout).toContain("route");
 		expect(stdout).toContain("stops");
 		expect(stdout).toContain("stop");
+		expect(stdout).toContain("search");
 		expect(stdout).toContain("next");
 		expect(stdout).toContain("alerts");
 		expect(stdout).toContain("plan");
@@ -68,6 +69,14 @@ describe("cli route (help/args)", () => {
 		const { stderr, exitCode } = await run("route");
 		expect(exitCode).toBe(1);
 		expect(stderr).toContain("missing required argument");
+	});
+});
+
+describe("cli search (help/args)", () => {
+	test("shows help for search command", async () => {
+		const { stdout, exitCode } = await run("search", "--help");
+		expect(exitCode).toBe(0);
+		expect(stdout).toContain("--interactive");
 	});
 });
 
