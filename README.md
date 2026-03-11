@@ -2,7 +2,7 @@
   <img src="icon.png" width="120" alt="Strætó logo" />
 </p>
 
-<h1 align="center">straeto</h1>
+<h1 align="center">Strætó</h1>
 
 <p align="center">
   A CLI for the Icelandic bus system <a href="https://www.straeto.is">Strætó</a>, built with <a href="https://bun.sh">Bun</a>.
