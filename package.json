@@ -33,7 +33,7 @@
     "format": "biome format --write src",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "release": "npm version patch && git push --tags"
+    "release": "bun test && npm version patch && git push --tags"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.6",
