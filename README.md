@@ -16,6 +16,13 @@
 bun install -g straeto
 ```
 
+Or run directly without installing:
+
+```bash
+bunx straeto alerts
+npx straeto route 3
+```
+
 ## Commands
 
 ### `straeto route <number> [bus]`
