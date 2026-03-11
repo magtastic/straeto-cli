@@ -8,24 +8,65 @@ const HEADERS = {
 	Origin: "https://www.straeto.is",
 };
 
+const MAX_RETRIES = 3;
+const TIMEOUT_MS = 5000;
+
 async function query<T>(
 	gql: string,
 	variables: Record<string, unknown> | undefined,
 	schema: z.ZodType<T>,
 ): Promise<T> {
-	const res = await fetch(API_URL, {
-		method: "POST",
-		headers: HEADERS,
-		body: JSON.stringify({ query: gql, variables }),
-	});
+	const start = Date.now();
 
-	if (!res.ok) throw new Error(`API error: ${res.status}`);
+	for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+		if (Date.now() - start > TIMEOUT_MS) break;
 
-	const json = (await res.json()) as { data?: unknown; errors?: { message: string }[] };
-	if (json.errors && !json.data)
-		throw new Error(json.errors.map((error) => error.message).join(", "));
-	if (!json.data) throw new Error("No data returned from API");
-	return schema.parse(json.data);
+		if (attempt > 0) {
+			const delay = 200 * 2 ** (attempt - 1);
+			const remaining = TIMEOUT_MS - (Date.now() - start);
+			if (remaining <= 0) break;
+			await new Promise((r) => setTimeout(r, Math.min(delay, remaining)));
+		}
+
+		try {
+			const res = await fetch(API_URL, {
+				method: "POST",
+				headers: HEADERS,
+				body: JSON.stringify({ query: gql, variables }),
+				signal: AbortSignal.timeout(TIMEOUT_MS - (Date.now() - start)),
+			});
+
+			if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+			const json = (await res.json()) as { data?: unknown; errors?: { message: string }[] };
+			if (json.errors && !json.data)
+				throw new Error(json.errors.map((error) => error.message).join(", "));
+			if (!json.data) throw new Error("No data returned from API");
+
+			const result = schema.safeParse(json.data);
+			if (!result.success) {
+				const issues = result.error.issues
+					.map((i) => `  ${i.path.join(".")}: ${i.message}`)
+					.join("\n");
+				const firstPath = result.error.issues[0]?.path ?? [];
+				let sample: unknown = json.data;
+				for (const key of firstPath) {
+					if (sample != null && typeof sample === "object")
+						sample = (sample as Record<string, unknown>)[key];
+				}
+				const raw = JSON.stringify(sample, null, 2);
+				const preview = raw && raw.length > 500 ? `${raw.slice(0, 500)}…` : raw;
+				throw new Error(
+					`Schema validation failed:\n${issues}\n\nValue at "${firstPath.join(".")}":\n${preview}`,
+				);
+			}
+			return result.data;
+		} catch (err) {
+			if (attempt === MAX_RETRIES - 1 || Date.now() - start > TIMEOUT_MS) throw err;
+		}
+	}
+
+	throw new Error("Strætó is not responding — please try again in a moment.");
 }
 
 // --- Schemas ---
@@ -168,14 +209,16 @@ export function findLastStop(bus: BusLocation, stops: Stop[]): string | undefine
 // --- Response schemas ---
 
 const BusLocationResponseSchema = z.object({
-	BusLocationByRoute: z.object({
-		lastUpdate: z.string(),
-		results: z.array(BusLocationSchema),
-	}),
+	BusLocationByRoute: z
+		.object({
+			lastUpdate: z.string(),
+			results: z.array(BusLocationSchema),
+		})
+		.nullable(),
 });
 
 const StopsResponseSchema = z.object({
-	GtfsStops: z.object({ results: z.array(StopSchema) }),
+	GtfsStops: z.object({ results: z.array(StopSchema) }).nullable(),
 });
 
 const StopDetailSchema = StopSchema.extend({
@@ -187,15 +230,15 @@ const StopResponseSchema = z.object({
 });
 
 const AlertsResponseSchema = z.object({
-	Alerts: z.object({ results: z.array(AlertSchema) }),
+	Alerts: z.object({ results: z.array(AlertSchema) }).nullable(),
 });
 
 const GeocodeResponseSchema = z.object({
-	Geocode: z.object({ results: z.array(GeoResultSchema) }),
+	Geocode: z.object({ results: z.array(GeoResultSchema) }).nullable(),
 });
 
 const TripPlannerResponseSchema = z.object({
-	TripPlanner: z.object({ results: z.array(TripItinerarySchema) }),
+	TripPlanner: z.object({ results: z.array(TripItinerarySchema) }).nullable(),
 });
 
 // --- Queries ---
@@ -214,7 +257,7 @@ export async function getBusLocations(routes: string[]) {
 		{ routes },
 		BusLocationResponseSchema,
 	);
-	return data.BusLocationByRoute;
+	return data.BusLocationByRoute ?? { lastUpdate: "", results: [] };
 }
 
 export async function getStops() {
@@ -223,7 +266,7 @@ export async function getStops() {
 		undefined,
 		StopsResponseSchema,
 	);
-	return data.GtfsStops.results;
+	return data.GtfsStops?.results ?? [];
 }
 
 export async function getStop(id: string) {
@@ -251,7 +294,7 @@ export async function getAlerts(language: string = "IS") {
 		{ language },
 		AlertsResponseSchema,
 	);
-	return data.Alerts.results;
+	return data.Alerts?.results ?? [];
 }
 
 export async function geocode(placesQuery: string) {
@@ -264,7 +307,7 @@ export async function geocode(placesQuery: string) {
 		{ placesQuery },
 		GeocodeResponseSchema,
 	);
-	return data.Geocode.results;
+	return data.Geocode?.results ?? [];
 }
 
 export async function planTrip(opts: {
@@ -298,5 +341,5 @@ export async function planTrip(opts: {
 		opts,
 		TripPlannerResponseSchema,
 	);
-	return data.TripPlanner.results;
+	return data.TripPlanner?.results ?? [];
 }
