@@ -125,6 +125,7 @@ export type GeoResult = z.infer<typeof GeoResultSchema>;
 export type TripStop = z.infer<typeof TripStopSchema>;
 export type TripLeg = z.infer<typeof TripLegSchema>;
 export type TripItinerary = z.infer<typeof TripItinerarySchema>;
+export type StopDetail = z.infer<typeof StopDetailSchema>;
 
 // --- Helpers ---
 
@@ -177,10 +178,12 @@ const StopsResponseSchema = z.object({
 	GtfsStops: z.object({ results: z.array(StopSchema) }),
 });
 
+const StopDetailSchema = StopSchema.extend({
+	streetView: z.object({ iframeUrl: z.string() }).nullable(),
+});
+
 const StopResponseSchema = z.object({
-	GtfsStop: StopSchema.extend({
-		streetView: z.object({ iframeUrl: z.string() }).nullable(),
-	}).nullable(),
+	GtfsStop: StopDetailSchema.nullable(),
 });
 
 const AlertsResponseSchema = z.object({

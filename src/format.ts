@@ -1,5 +1,13 @@
 import chalk from "chalk";
-import type { Alert, BusLocation, GeoResult, NextStop, Stop, TripItinerary } from "./api";
+import type {
+	Alert,
+	BusLocation,
+	GeoResult,
+	NextStop,
+	Stop,
+	StopDetail,
+	TripItinerary,
+} from "./api";
 
 const routeColor = chalk.bold.yellow;
 const stopColor = chalk.cyan;
@@ -120,7 +128,7 @@ export function formatStops(stops: Stop[]): string {
 	return lines.join("\n");
 }
 
-export function formatStop(stop: Stop & { streetView?: { iframeUrl: string } | null }): string {
+export function formatStop(stop: StopDetail): string {
 	const lines = [
 		heading(stop.name) + (stop.isTerminal ? chalk.magenta(" Terminal") : ""),
 		"",
