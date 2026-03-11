@@ -45,11 +45,12 @@ describe("cli --help", () => {
 });
 
 describe("cli --version", () => {
-	test("prints version number", async () => {
+	test("prints version matching package.json", async () => {
+		const pkg = await Bun.file("package.json").json();
 		const { stdout, exitCode } = await run("--version");
 
 		expect(exitCode).toBe(0);
-		expect(stdout.trim()).toMatch(/^\d+\.\d+\.\d+$/);
+		expect(stdout.trim()).toBe(pkg.version);
 	});
 
 	test("works with -v shorthand", async () => {

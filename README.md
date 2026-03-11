@@ -8,6 +8,13 @@
   A CLI for the Icelandic bus system <a href="https://www.straeto.is">Strætó</a>, built with <a href="https://bun.sh">Bun</a>.
 </p>
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/straeto"><img src="https://img.shields.io/npm/v/straeto" alt="npm version" /></a>
+  <a href="https://github.com/magtastic/straeto-cli/actions/workflows/ci.yml"><img src="https://github.com/magtastic/straeto-cli/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://www.npmjs.com/package/straeto"><img src="https://img.shields.io/npm/dm/straeto" alt="npm downloads" /></a>
+  <a href="https://github.com/magtastic/straeto-cli/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/straeto" alt="license" /></a>
+</p>
+
 ---
 
 ## Install

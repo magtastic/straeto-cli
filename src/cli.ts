@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import chalk from "chalk";
 import { program } from "commander";
+import pkg from "../package.json";
 import { alertsCommand } from "./commands/alerts";
 import { planCommand } from "./commands/plan";
 import { routeCommand } from "./commands/route";
@@ -18,7 +19,7 @@ function handleError(error: unknown) {
 program
 	.name("straeto")
 	.description("Strætó — Icelandic bus system CLI")
-	.version("0.1.0", "-v, --version");
+	.version(pkg.version, "-v, --version");
 
 program
 	.command("route")
