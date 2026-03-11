@@ -1,142 +1,205 @@
+import { z } from "zod/v4";
 import { currentDate } from "./format";
 
 const API_URL = "https://api.straeto.is/graphql";
 
 const HEADERS = {
-  "Content-Type": "application/json",
-  Origin: "https://www.straeto.is",
+	"Content-Type": "application/json",
+	Origin: "https://www.straeto.is",
 };
 
-async function query<T>(gql: string, variables?: Record<string, unknown>): Promise<T> {
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: HEADERS,
-    body: JSON.stringify({ query: gql, variables }),
-  });
+async function query<T>(
+	gql: string,
+	variables: Record<string, unknown> | undefined,
+	schema: z.ZodType<T>,
+): Promise<T> {
+	const res = await fetch(API_URL, {
+		method: "POST",
+		headers: HEADERS,
+		body: JSON.stringify({ query: gql, variables }),
+	});
 
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
+	if (!res.ok) throw new Error(`API error: ${res.status}`);
 
-  const json = (await res.json()) as { data?: T; errors?: { message: string }[] };
-  if (json.errors && !json.data) throw new Error(json.errors.map((e) => e.message).join(", "));
-  return json.data!;
+	const json = (await res.json()) as { data?: unknown; errors?: { message: string }[] };
+	if (json.errors && !json.data)
+		throw new Error(json.errors.map((error) => error.message).join(", "));
+	if (!json.data) throw new Error("No data returned from API");
+	return schema.parse(json.data);
 }
 
-// --- Types ---
+// --- Schemas ---
 
-export interface NextStop {
-  arrival: string;
-  waitingTime: number;
-  stop: { name: string } | null;
-}
+const NextStopSchema = z.object({
+	arrival: z.string(),
+	waitingTime: z.number(),
+	stop: z.object({ name: z.string() }).nullable(),
+});
 
-export interface BusLocation {
-  busId: string;
-  tripId: string;
-  routeNr: string;
-  tag: string | null;
-  headsign: string;
-  lat: number;
-  lng: number;
-  direction: number;
-  nextStops: NextStop[];
-}
+const BusLocationSchema = z.object({
+	busId: z.string(),
+	tripId: z.string(),
+	routeNr: z.string(),
+	tag: z.string().nullable(),
+	headsign: z.string(),
+	lat: z.number(),
+	lng: z.number(),
+	direction: z.number(),
+	nextStops: z.array(NextStopSchema),
+});
 
-export interface Stop {
-  id: number;
-  name: string;
-  lat: number;
-  lon: number;
-  type: string;
-  code: string;
-  isTerminal: boolean;
-  routes: string[];
-}
+const StopSchema = z.object({
+	id: z.number(),
+	name: z.string(),
+	lat: z.number(),
+	lon: z.number(),
+	type: z.number(),
+	code: z.string().nullable(),
+	isTerminal: z.boolean(),
+	routes: z.array(z.string()),
+});
 
-export interface Alert {
-  id: string;
-  cause: string;
-  effect: string;
-  routes: string[];
-  title: string;
-  text: string;
-  dateStart: string;
-  dateEnd: string | null;
-}
+const AlertSchema = z.object({
+	id: z.string(),
+	cause: z.string(),
+	effect: z.string(),
+	routes: z.array(z.string()),
+	title: z.string(),
+	text: z.string(),
+	dateStart: z.string(),
+	dateEnd: z.string().nullable(),
+});
 
-export interface GeoResult {
-  id: string;
-  name: string;
-  lat: number;
-  lon: number;
-  address: string;
-  type: string;
-  subType: string;
-}
+const GeoResultSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	lat: z.number(),
+	lon: z.number(),
+	address: z.string(),
+	type: z.string(),
+	subType: z.string(),
+});
 
-export interface TripStop {
-  id: string;
-  name: string;
-  lat: number;
-  lon: number;
-}
+const TripStopSchema = z.object({
+	id: z.union([z.string(), z.number()]),
+	name: z.string(),
+	lat: z.number(),
+	lon: z.number(),
+});
 
-export interface TripLeg {
-  type: string;
-  duration: number;
-  distance: number;
-  time: { from: string; to: string };
-  from: { lat: number; lon: number; depature: string; stop: TripStop | null };
-  to: { lat: number; lon: number; arrival: string; stop: TripStop | null };
-  trip?: { routeNr: string; headsign: string };
-  stops?: { id: string; name: string }[];
-}
+const TripLegSchema = z.object({
+	type: z.string(),
+	duration: z.number(),
+	distance: z.number(),
+	time: z.object({ from: z.string(), to: z.string() }),
+	from: z.object({
+		lat: z.number(),
+		lon: z.number(),
+		depature: z.string().nullable(),
+		stop: TripStopSchema.nullable(),
+	}),
+	to: z.object({
+		lat: z.number(),
+		lon: z.number(),
+		arrival: z.string().nullable(),
+		stop: TripStopSchema.nullable(),
+	}),
+	trip: z.object({ routeNr: z.string(), headsign: z.string() }).optional(),
+	stops: z.array(z.object({ id: z.union([z.string(), z.number()]), name: z.string() })).optional(),
+});
 
-export interface TripItinerary {
-  id: string;
-  duration: { walk: number; bus: number; total: number };
-  time: { from: string; to: string };
-  legs: TripLeg[];
-}
+const TripItinerarySchema = z.object({
+	id: z.string(),
+	duration: z.object({ walk: z.number(), bus: z.number(), total: z.number() }),
+	time: z.object({ from: z.string(), to: z.string() }),
+	legs: z.array(TripLegSchema),
+});
+
+// --- Exported types ---
+
+export type NextStop = z.infer<typeof NextStopSchema>;
+export type BusLocation = z.infer<typeof BusLocationSchema>;
+export type Stop = z.infer<typeof StopSchema>;
+export type Alert = z.infer<typeof AlertSchema>;
+export type GeoResult = z.infer<typeof GeoResultSchema>;
+export type TripStop = z.infer<typeof TripStopSchema>;
+export type TripLeg = z.infer<typeof TripLegSchema>;
+export type TripItinerary = z.infer<typeof TripItinerarySchema>;
 
 // --- Helpers ---
 
 function distSq(lat1: number, lon1: number, lat2: number, lon2: number) {
-  return (lat1 - lat2) ** 2 + (lon1 - lon2) ** 2;
+	return (lat1 - lat2) ** 2 + (lon1 - lon2) ** 2;
 }
 
 export function findBus(buses: BusLocation[], route: string, letter: string) {
-  const upper = letter.toUpperCase();
-  return buses.find((b) => {
-    const l = b.busId.split("-").pop()?.toUpperCase();
-    return b.routeNr === route && l === upper;
-  });
+	const upper = letter.toUpperCase();
+	return buses.find((bus) => {
+		const busLetter = bus.busId.split("-").pop()?.toUpperCase();
+		return bus.routeNr === route && busLetter === upper;
+	});
 }
 
 export function findLastStop(bus: BusLocation, stops: Stop[]): string | undefined {
-  const nextNames = new Set(
-    bus.nextStops.filter((s) => s.stop).map((s) => s.stop!.name)
-  );
-  const routeStops = stops.filter(
-    (s) => s.routes.includes(bus.routeNr) && !nextNames.has(s.name)
-  );
-  if (routeStops.length === 0) return undefined;
-  // Find closest to bus position (note: BusLocation uses lng, Stop uses lon)
-  let closest = routeStops[0];
-  let minDist = distSq(bus.lat, bus.lng, closest.lat, closest.lon);
-  for (let i = 1; i < routeStops.length; i++) {
-    const d = distSq(bus.lat, bus.lng, routeStops[i].lat, routeStops[i].lon);
-    if (d < minDist) { minDist = d; closest = routeStops[i]; }
-  }
-  return closest.name;
+	const nextNames = new Set(
+		bus.nextStops.filter((nextStop) => nextStop.stop).map((nextStop) => nextStop.stop?.name),
+	);
+	const routeStops = stops.filter(
+		(stop) => stop.routes.includes(bus.routeNr) && !nextNames.has(stop.name),
+	);
+	const first = routeStops[0];
+	if (!first) return undefined;
+	// Find closest to bus position (note: BusLocation uses lng, Stop uses lon)
+	let closest = first;
+	let minDist = distSq(bus.lat, bus.lng, closest.lat, closest.lon);
+	for (let i = 1; i < routeStops.length; i++) {
+		const stop = routeStops[i];
+		if (!stop) continue;
+		const dist = distSq(bus.lat, bus.lng, stop.lat, stop.lon);
+		if (dist < minDist) {
+			minDist = dist;
+			closest = stop;
+		}
+	}
+	return closest.name;
 }
+
+// --- Response schemas ---
+
+const BusLocationResponseSchema = z.object({
+	BusLocationByRoute: z.object({
+		lastUpdate: z.string(),
+		results: z.array(BusLocationSchema),
+	}),
+});
+
+const StopsResponseSchema = z.object({
+	GtfsStops: z.object({ results: z.array(StopSchema) }),
+});
+
+const StopResponseSchema = z.object({
+	GtfsStop: StopSchema.extend({
+		streetView: z.object({ iframeUrl: z.string() }).nullable(),
+	}).nullable(),
+});
+
+const AlertsResponseSchema = z.object({
+	Alerts: z.object({ results: z.array(AlertSchema) }),
+});
+
+const GeocodeResponseSchema = z.object({
+	Geocode: z.object({ results: z.array(GeoResultSchema) }),
+});
+
+const TripPlannerResponseSchema = z.object({
+	TripPlanner: z.object({ results: z.array(TripItinerarySchema) }),
+});
 
 // --- Queries ---
 
 export async function getBusLocations(routes: string[]) {
-  const data = await query<{
-    BusLocationByRoute: { lastUpdate: string; results: BusLocation[] };
-  }>(
-    `query BusLocationByRoute($routes: [String!]!) {
+	const data = await query(
+		`query BusLocationByRoute($routes: [String!]!) {
       BusLocationByRoute(routes: $routes) {
         lastUpdate
         results {
@@ -145,69 +208,71 @@ export async function getBusLocations(routes: string[]) {
         }
       }
     }`,
-    { routes }
-  );
-  return data.BusLocationByRoute;
+		{ routes },
+		BusLocationResponseSchema,
+	);
+	return data.BusLocationByRoute;
 }
 
 export async function getStops() {
-  const data = await query<{ GtfsStops: { results: Stop[] } }>(
-    `{ GtfsStops { results { id name lat lon type code isTerminal routes } } }`
-  );
-  return data.GtfsStops.results;
+	const data = await query(
+		`{ GtfsStops { results { id name lat lon type code isTerminal routes } } }`,
+		undefined,
+		StopsResponseSchema,
+	);
+	return data.GtfsStops.results;
 }
 
 export async function getStop(id: string) {
-  const today = currentDate();
-  const data = await query<{
-    GtfsStop: Stop & { streetView: { iframeUrl: string } | null } | null;
-  }>(
-    `query Stop($id: String!, $date: String) {
+	const today = currentDate();
+	const data = await query(
+		`query Stop($id: String!, $date: String) {
       GtfsStop(id: $id, date: $date) {
         id name lat lon type code isTerminal routes
         streetView { iframeUrl }
       }
     }`,
-    { id, date: today }
-  );
-  return data.GtfsStop;
+		{ id, date: today },
+		StopResponseSchema,
+	);
+	return data.GtfsStop;
 }
 
 export async function getAlerts(language: string = "IS") {
-  const data = await query<{ Alerts: { results: Alert[] } }>(
-    `query Alerts($language: AlertLanguage) {
+	const data = await query(
+		`query Alerts($language: AlertLanguage) {
       Alerts(language: $language) {
         results { id cause effect routes title text dateStart dateEnd }
       }
     }`,
-    { language }
-  );
-  return data.Alerts.results;
+		{ language },
+		AlertsResponseSchema,
+	);
+	return data.Alerts.results;
 }
 
 export async function geocode(placesQuery: string) {
-  const data = await query<{ Geocode: { results: GeoResult[] } }>(
-    `query Geocode($placesQuery: String!) {
+	const data = await query(
+		`query Geocode($placesQuery: String!) {
       Geocode(query: $placesQuery) {
         results { id name lat lon address type subType }
       }
     }`,
-    { placesQuery }
-  );
-  return data.Geocode.results;
+		{ placesQuery },
+		GeocodeResponseSchema,
+	);
+	return data.Geocode.results;
 }
 
 export async function planTrip(opts: {
-  from: string;
-  to: string;
-  date: string;
-  time: string;
-  arrivalBy?: boolean;
+	from: string;
+	to: string;
+	date: string;
+	time: string;
+	arrivalBy?: boolean;
 }) {
-  const data = await query<{
-    TripPlanner: { results: TripItinerary[] };
-  }>(
-    `query TripPlanner($time: String!, $date: String!, $from: String!, $to: String!, $arrivalBy: Boolean, $language: Language) {
+	const data = await query(
+		`query TripPlanner($time: String!, $date: String!, $from: String!, $to: String!, $arrivalBy: Boolean, $language: Language) {
       TripPlanner(time: $time, date: $date, from: $from, to: $to, arrivalBy: $arrivalBy, language: $language) {
         id
         results {
@@ -227,7 +292,8 @@ export async function planTrip(opts: {
         }
       }
     }`,
-    opts
-  );
-  return data.TripPlanner.results;
+		opts,
+		TripPlannerResponseSchema,
+	);
+	return data.TripPlanner.results;
 }

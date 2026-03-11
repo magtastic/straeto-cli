@@ -1,15 +1,22 @@
 {
-  "name": "bus",
+  "name": "straeto",
+  "version": "0.1.0",
+  "description": "Strætó — Icelandic bus system CLI",
   "module": "src/cli.ts",
   "type": "module",
-  "private": true,
   "bin": {
-    "bus": "src/cli.ts"
+    "straeto": "src/cli.ts"
   },
   "scripts": {
-    "start": "bun run src/cli.ts"
+    "start": "bun run src/cli.ts",
+    "lint": "biome check src",
+    "lint:fix": "biome check --write src",
+    "format": "biome format --write src",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.6",
     "@types/bun": "latest"
   },
   "peerDependencies": {
@@ -17,6 +24,7 @@
   },
   "dependencies": {
     "chalk": "5",
-    "commander": "13"
+    "commander": "13",
+    "zod": "^4.3.6"
   }
 }
