@@ -1,0 +1,8 @@
+{
+  "name": "straeto",
+  "description": "Query the Icelandic bus system Strætó — routes, stops, alerts, and trip planning",
+  "version": "1.0.0",
+  "author": {
+    "name": "magtastic"
+  }
+}
