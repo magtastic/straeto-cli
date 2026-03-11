@@ -88,7 +88,8 @@ straeto plan --by 17:00                   # arrive by specific time
 Use Strætó directly inside [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — ask about bus routes, stops, alerts, or plan trips in natural language.
 
 ```
-/plugin install github:magtastic/straeto-cli
+/plugin marketplace add magtastic/straeto-cli
+/plugin install straeto@straeto
 ```
 
 Then type `/straeto` or just ask about buses in Reykjavík.

@@ -1,0 +1,13 @@
+{
+  "name": "straeto",
+  "owner": {
+    "name": "magtastic"
+  },
+  "plugins": [
+    {
+      "name": "straeto",
+      "description": "Query the Icelandic bus system Strætó — routes, stops, alerts, and trip planning",
+      "source": "."
+    }
+  ]
+}
