@@ -32,7 +32,8 @@
     "lint:fix": "biome check --write src",
     "format": "biome format --write src",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "release": "npm version patch && git push --tags"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.6",
