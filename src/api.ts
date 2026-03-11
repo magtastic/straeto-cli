@@ -52,7 +52,7 @@ async function query<T>(
 				let sample: unknown = json.data;
 				for (const key of firstPath) {
 					if (sample != null && typeof sample === "object")
-						sample = (sample as Record<string, unknown>)[key];
+						sample = (sample as Record<string | number, unknown>)[key as string | number];
 				}
 				const raw = JSON.stringify(sample, null, 2);
 				const preview = raw && raw.length > 500 ? `${raw.slice(0, 500)}…` : raw;
