@@ -66,9 +66,7 @@ describe("cli route", () => {
 
 		expect(exitCode).toBe(0);
 		// Either shows active buses or a "No buses" message
-		expect(
-			stdout.includes("Route 3") || stdout.includes("No buses"),
-		).toBe(true);
+		expect(stdout.includes("Route 3") || stdout.includes("No buses")).toBe(true);
 	});
 
 	test("shows help for route command", async () => {
