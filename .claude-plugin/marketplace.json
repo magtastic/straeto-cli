@@ -7,10 +7,7 @@
     {
       "name": "straeto",
       "description": "Query the Icelandic bus system Strætó — routes, stops, alerts, and trip planning",
-      "source": {
-        "source": "github",
-        "repo": "magtastic/straeto-cli"
-      }
+      "source": "."
     }
   ]
 }
