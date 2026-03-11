@@ -6,15 +6,26 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/magtastic/straeto-cli"
+    "url": "git+https://github.com/magtastic/straeto-cli.git"
   },
-  "keywords": ["straeto", "iceland", "bus", "cli", "bun", "reykjavik"],
+  "keywords": [
+    "straeto",
+    "iceland",
+    "bus",
+    "cli",
+    "bun",
+    "reykjavik"
+  ],
   "module": "src/cli.ts",
   "type": "module",
   "bin": {
     "straeto": "src/cli.ts"
   },
-  "files": ["src", "icon.png", "README.md"],
+  "files": [
+    "src",
+    "icon.png",
+    "README.md"
+  ],
   "scripts": {
     "start": "bun run src/cli.ts",
     "lint": "biome check src",
