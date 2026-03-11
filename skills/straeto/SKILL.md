@@ -8,6 +8,13 @@ You have access to the `straeto` CLI for querying the Icelandic bus system Stræ
 
 ## Available commands
 
+### Real-time arrivals at a stop
+```bash
+bunx straeto next <stop>              # all upcoming arrivals
+bunx straeto next <stop> -r <route>   # filter by route
+bunx straeto next <stop> -d <direction>  # filter by direction/headsign
+```
+
 ### Check buses on a route
 ```bash
 bunx straeto route <number>        # overview of all active buses
@@ -35,16 +42,17 @@ bunx straeto alerts -l EN          # alerts in English
 
 ### Plan a trip
 ```bash
-bunx straeto plan -f <lat,lon> -t <lat,lon>          # between coordinates
-bunx straeto plan -f <lat,lon> -t <lat,lon> --at 08:30  # depart at time
-bunx straeto plan -f <lat,lon> -t <lat,lon> --by 17:00  # arrive by time
+bunx straeto plan -f <place> -t <place>        # place names or coordinates
+bunx straeto plan -f <place> -t <place> --at 08:30  # depart at time
+bunx straeto plan -f <place> -t <place> --by 17:00  # arrive by time
 ```
 
 ## Guidelines
 
 - Always add `FORCE_COLOR=0` as an env variable when running commands so the output is readable.
+- When the user asks "when is the next bus" or about arrivals at a stop, use `straeto next <stop>`.
 - When the user asks about a bus route, start with `straeto route <number>` to show active buses.
-- When the user asks "how do I get from X to Y", use `straeto plan` with coordinates. If the user gives place names instead of coordinates, look up the coordinates first with `straeto stop <name>` or use well-known Reykjavík coordinates.
+- When the user asks "how do I get from X to Y", use `straeto plan -f <place> -t <place>`. Place names are supported directly.
 - Present the CLI output to the user in a clean, readable format. Summarize key information rather than dumping raw output.
 - Strætó operates in the Reykjavík capital area in Iceland. If the user asks about buses elsewhere, let them know this only covers Strætó.
 - The correct Icelandic spelling is **Strætó** (with æ and ó).

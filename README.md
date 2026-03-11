@@ -72,13 +72,25 @@ straeto alerts            # alerts in Icelandic (default)
 straeto alerts -l EN      # alerts in English
 ```
 
+### `straeto next <stop>`
+
+Show real-time upcoming arrivals at a stop.
+
+```bash
+straeto next Höfðatorg               # all upcoming arrivals
+straeto next Höfðatorg -r 14         # only route 14
+straeto next Höfðatorg -d Grandi     # filter by direction
+straeto next Höfðatorg -r 14 -n 3   # limit to 3 results
+```
+
 ### `straeto plan`
 
-Plan a trip between two locations. Launches interactive mode by default with autocomplete search and time selection.
+Plan a trip between two locations. Accepts place names or coordinates. Launches interactive mode by default with autocomplete search and time selection.
 
 ```bash
 straeto plan                              # interactive mode
-straeto plan -f 64.14,-21.90 -t 64.10,-21.94   # coordinate mode
+straeto plan -f Höfðatorg -t Mýrargata    # place names
+straeto plan -f 64.14,-21.90 -t 64.10,-21.94   # coordinates
 straeto plan --at 08:30                   # depart at specific time
 straeto plan --by 17:00                   # arrive by specific time
 ```

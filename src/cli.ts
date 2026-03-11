@@ -3,9 +3,10 @@ import chalk from "chalk";
 import { program } from "commander";
 import pkg from "../package.json";
 import { alertsCommand } from "./commands/alerts";
+import { nextCommand } from "./commands/next";
 import { planCommand } from "./commands/plan";
 import { routeCommand } from "./commands/route";
-import { AlertsOpts, PlanOpts, RouteOpts, StopsOpts } from "./commands/schemas";
+import { AlertsOpts, NextOpts, PlanOpts, RouteOpts, StopsOpts } from "./commands/schemas";
 import { stopCommand } from "./commands/stop";
 import { stopsCommand } from "./commands/stops";
 import { writeErr } from "./terminal";
@@ -76,10 +77,25 @@ program
 	});
 
 program
+	.command("next")
+	.description("Show upcoming arrivals at a stop")
+	.argument("<stop...>", "Stop name or ID")
+	.option("-r, --route <route>", "Filter by route number")
+	.option("-d, --direction <headsign>", "Filter by direction/headsign")
+	.option("-n, --limit <n>", "Limit results")
+	.action(async (parts: string[], rawOpts) => {
+		try {
+			await nextCommand(parts, NextOpts.parse(rawOpts));
+		} catch (error) {
+			handleError(error);
+		}
+	});
+
+program
 	.command("plan")
 	.description("Plan a trip between two locations")
-	.option("-f, --from <coords>", "Origin as lat,lon")
-	.option("-t, --to <coords>", "Destination as lat,lon")
+	.option("-f, --from <place>", "Origin as place name or lat,lon")
+	.option("-t, --to <place>", "Destination as place name or lat,lon")
 	.option("-i, --interactive", "Interactive mode — search for places by name")
 	.option("-d, --date <date>", "Date (YYYY-MM-DD, defaults to today)")
 	.option("--at <time>", "Depart at time (HH:MM, defaults to now)")

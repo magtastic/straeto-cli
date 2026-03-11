@@ -16,6 +16,12 @@ export const AlertsOpts = z.object({
 	lang: z.string(),
 });
 
+export const NextOpts = z.object({
+	route: z.string().optional(),
+	direction: z.string().optional(),
+	limit: z.string().optional(),
+});
+
 export const PlanOpts = z.object({
 	from: z.string().optional(),
 	to: z.string().optional(),

@@ -221,7 +221,7 @@ export async function promptTimeMode(): Promise<TimeMode> {
 
 			// Need time input
 			await write(
-				`${ANSI.carriageReturn}${ANSI.clearLine}${chalk.bold(opt.label.replace("…", ":"))} `,
+				`${ANSI.carriageReturn}${ANSI.clearLine}${chalk.bold(opt.label.replace("…", ":"))} ${chalk.dim("(HH:MM) ")}`,
 			);
 			disableRaw();
 
@@ -229,7 +229,8 @@ export async function promptTimeMode(): Promise<TimeMode> {
 			if (/^\d{1,2}:\d{2}$/.test(timeInput)) {
 				return { time: timeInput, arrivalBy: opt.arrivalBy };
 			}
-			// Invalid, re-prompt
+			// Invalid, show hint and re-prompt
+			await write(chalk.yellow("  Please enter time as HH:MM (e.g. 08:30)\n"));
 			enableRaw();
 			await draw();
 			continue;

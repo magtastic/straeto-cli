@@ -12,6 +12,21 @@ export async function planCommand(opts: z.infer<typeof PlanOpts>) {
 	let from = opts.from;
 	let to = opts.to;
 
+	// Geocode place names to coordinates
+	const isCoords = (s: string) => /^-?\d+\.?\d*,-?\d+\.?\d*$/.test(s);
+	if (from && !isCoords(from)) {
+		const results = await api.geocode(from);
+		if (results.length === 0) throw new Error(`Could not find location "${from}"`);
+		const loc = results[0];
+		if (loc) from = `${loc.lat},${loc.lon}`;
+	}
+	if (to && !isCoords(to)) {
+		const results = await api.geocode(to);
+		if (results.length === 0) throw new Error(`Could not find location "${to}"`);
+		const loc = results[0];
+		if (loc) to = `${loc.lat},${loc.lon}`;
+	}
+
 	if (opts.interactive || (!from && !to)) {
 		const { promptLocation, promptTimeMode } = await import("../prompt");
 		writeLn("");

@@ -26,6 +26,7 @@ describe("cli --help", () => {
 		expect(stdout).toContain("route");
 		expect(stdout).toContain("stops");
 		expect(stdout).toContain("stop");
+		expect(stdout).toContain("next");
 		expect(stdout).toContain("alerts");
 		expect(stdout).toContain("plan");
 	});
@@ -65,6 +66,22 @@ describe("cli route (help/args)", () => {
 
 	test("fails without route argument", async () => {
 		const { stderr, exitCode } = await run("route");
+		expect(exitCode).toBe(1);
+		expect(stderr).toContain("missing required argument");
+	});
+});
+
+describe("cli next (help/args)", () => {
+	test("shows help for next command", async () => {
+		const { stdout, exitCode } = await run("next", "--help");
+		expect(exitCode).toBe(0);
+		expect(stdout).toContain("--route");
+		expect(stdout).toContain("--direction");
+		expect(stdout).toContain("--limit");
+	});
+
+	test("fails without stop argument", async () => {
+		const { stderr, exitCode } = await run("next");
 		expect(exitCode).toBe(1);
 		expect(stderr).toContain("missing required argument");
 	});
